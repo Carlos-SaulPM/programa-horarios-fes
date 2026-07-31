@@ -1,4 +1,5 @@
 // src/types.ts
+
 export interface Horario {
   LU?: string;
   MA?: string;
@@ -9,7 +10,7 @@ export interface Horario {
 }
 
 export interface Clase {
-  profesor?: string;
+  profesor?: string; // Ya lo tenías opcional, excelente
   clave: string;
   materia: string;
   grupo: string;
@@ -17,4 +18,8 @@ export interface Clase {
   horario: Horario;
   salon: string;
   cupo: string;
+
+  // --- CAMPOS NUEVOS ---
+  esExterno?: boolean; // Opcional: true si viene de materias_externas.json
+  origen?: string; // Opcional: El nombre de la carrera (ej. "Ingeniería Civil")
 }

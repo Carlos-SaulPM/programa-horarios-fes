@@ -9,12 +9,22 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { type Clase } from "@/types";
 
-const obtenerEstilosTurno = (grupo: string) => {
-  const digitoTurno = parseInt(grupo.toString()[2]);
+const obtenerEstilos = (clase: Clase) => {
+  // 1. Si es EXTERNA (Prioridad sobre el turno)
+  if (clase.esExterno) {
+    return {
+      colorBarra: "bg-emerald-500", // Mismo tono que tu Card
+      estiloBadge:
+        "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100",
+      hoverFila: "hover:bg-emerald-50/30",
+    };
+  }
+
+  // 2. Si es Interna, calculamos turno
+  const digitoTurno = parseInt(clase.grupo.toString()[2]) || 0;
   const esMatutino = digitoTurno < 5;
 
   return {
-    esMatutino,
     colorBarra: esMatutino ? "bg-orange-500" : "bg-indigo-500",
     estiloBadge: esMatutino
       ? "bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100"
@@ -30,10 +40,9 @@ export const ClaseTable = ({ datos }: { datos: Clase[] }) => {
         <Table>
           <TableHeader className="bg-slate-50 sticky top-0 z-10 shadow-sm">
             <TableRow className="hover:bg-slate-50 border-b-slate-200">
-              <TableHead className="w-[90px] text-slate-700 font-bold">
+              <TableHead className="w-[100px] text-slate-700 font-bold">
                 Grupo
               </TableHead>
-              {/* Nueva columna Clave (oculta en móvil muy pequeño si prefieres, aquí la dejo visible en md) */}
               <TableHead className="hidden md:table-cell w-[80px] text-slate-700 font-bold">
                 Clave
               </TableHead>
@@ -43,6 +52,7 @@ export const ClaseTable = ({ datos }: { datos: Clase[] }) => {
               <TableHead className="hidden md:table-cell min-w-[200px] text-slate-700 font-bold">
                 Profesor
               </TableHead>
+              {/* Días */}
               {["LU", "MA", "MI", "JU", "VI", "SA"].map((d) => (
                 <TableHead
                   key={d}
@@ -57,27 +67,35 @@ export const ClaseTable = ({ datos }: { datos: Clase[] }) => {
           <TableBody>
             {datos.map((clase, i) => {
               const { colorBarra, estiloBadge, hoverFila } =
-                obtenerEstilosTurno(clase.grupo);
+                obtenerEstilos(clase);
 
               return (
                 <TableRow
                   key={`${clase.grupo}-${i}`}
                   className={`group relative transition-colors cursor-default ${hoverFila}`}
                 >
-                  {/* Columna Grupo */}
+                  {/* Columna Grupo con Barra de Color */}
                   <TableCell className="font-medium relative py-4">
                     <div
                       className={`absolute left-0 top-0 bottom-0 w-1.5 ${colorBarra}`}
                     />
-                    <Badge
-                      variant="outline"
-                      className={`ml-3 text-xs font-bold ${estiloBadge}`}
-                    >
-                      {clase.grupo}
-                    </Badge>
+                    <div className="flex flex-col ml-3 gap-1">
+                      <Badge
+                        variant="outline"
+                        className={`w-fit text-xs font-bold ${estiloBadge}`}
+                      >
+                        {clase.grupo}
+                      </Badge>
+                      {/* Badge pequeño indicando Origen si es externa */}
+                      {clase.esExterno && (
+                        <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-tighter">
+                          🎓 {clase.origen || "EXT"}
+                        </span>
+                      )}
+                    </div>
                   </TableCell>
 
-                  {/* Columna Clave (Desktop) */}
+                  {/* Columna Clave */}
                   <TableCell className="hidden md:table-cell">
                     <span className="font-mono text-xs text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
                       {clase.clave}
@@ -87,7 +105,7 @@ export const ClaseTable = ({ datos }: { datos: Clase[] }) => {
                   {/* Columna Materia */}
                   <TableCell>
                     <div className="flex flex-col">
-                      {/* Clave visible SOLO en móvil (arriba del nombre) */}
+                      {/* Móvil: Clave */}
                       <span className="md:hidden text-[10px] font-mono text-slate-400 mb-0.5">
                         {clase.clave}
                       </span>
@@ -96,12 +114,12 @@ export const ClaseTable = ({ datos }: { datos: Clase[] }) => {
                         {clase.materia}
                       </span>
 
-                      {/* Profesor visible solo en móvil */}
+                      {/* Móvil: Profesor */}
                       <span className="md:hidden text-xs text-slate-500 mt-1">
                         {clase.profesor || "Sin asignar"}
                       </span>
 
-                      {/* Horario móvil */}
+                      {/* Móvil: Horarios */}
                       <div className="md:hidden flex flex-wrap gap-1 mt-2">
                         {["LU", "MA", "MI", "JU", "VI", "SA"].map((dia) => {
                           const hora =
@@ -125,7 +143,7 @@ export const ClaseTable = ({ datos }: { datos: Clase[] }) => {
                     {clase.profesor || "Sin asignar"}
                   </TableCell>
 
-                  {/* Columnas Horarios */}
+                  {/* Horarios (Desktop) */}
                   {["LU", "MA", "MI", "JU", "VI", "SA"].map((d) => {
                     const hora = clase.horario[d as keyof typeof clase.horario];
                     return (

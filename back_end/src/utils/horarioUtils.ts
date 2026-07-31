@@ -31,3 +31,17 @@ export const ordenarGruposCronologicamente = (
     return horaA.localeCompare(horaB);
   });
 };
+
+export const buscarEnMapa = (
+  mapa: Map<string, any[]>,
+  criterio: (clases: any[], grupo: string) => any[],
+) => {
+  let resultados: any[] = [];
+  mapa.forEach((clases, grupo) => {
+    const coincidencias = criterio(clases, grupo);
+    if (coincidencias.length > 0) {
+      resultados.push(...coincidencias);
+    }
+  });
+  return resultados;
+};

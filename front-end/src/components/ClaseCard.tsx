@@ -22,6 +22,12 @@ export const ClaseCard = ({ data }: { data: Clase }) => {
     <Card
       className={`hover:shadow-md transition-all border-l-4 ${colorBorde} flex flex-col h-full`}
     >
+      {/* INDICADOR VISUAL SI ES EXTERNA */}
+      {data.esExterno && (
+        <div className="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 text-center font-bold tracking-wide uppercase border-b border-emerald-200">
+          🎓 {data.origen || "Otra Carrera"}
+        </div>
+      )}
       <CardHeader className="pb-2 space-y-1">
         <div className="flex justify-between items-start gap-2">
           <CardTitle className="text-base font-bold text-slate-900 leading-tight">

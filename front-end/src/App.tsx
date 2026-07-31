@@ -12,62 +12,62 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ClaseCard } from "@/components/ClaseCard";
-import { ClaseTable } from "@/components/ClaseTable"; // Asegúrate de haber creado este componente
+import { ClaseTable } from "@/components/ClaseTable";
 import { type Clase } from "@/types";
 
 function App() {
-  // --- ESTADOS DE LA APLICACIÓN ---
-
-  // Modo de búsqueda: 'profesor' o 'rango' (horario libre)
-  const [modo, setModo] = useState<"profesor" | "rango">("profesor");
-
-  // Datos y Carga
+  const [modo, setModo] = useState<"profesor" | "rango" | "materia">(
+    "profesor",
+  );
   const [resultados, setResultados] = useState<Clase[]>([]);
   const [loading, setLoading] = useState(false);
   const [busquedaRealizada, setBusquedaRealizada] = useState(false);
-
-  // Vista: 'cards' o 'tabla'
   const [vista, setVista] = useState<"cards" | "tabla">("cards");
 
-  // --- FILTROS ---
   const [queryProfesor, setQueryProfesor] = useState("");
+  const [queryMateria, setQueryMateria] = useState("");
+
   const [dia, setDia] = useState("LU");
   const [horaInicio, setHoraInicio] = useState("07:00");
   const [horaFin, setHoraFin] = useState("22:00");
-  const [ordenar, setOrdenar] = useState(false);
 
-  // Filtros Avanzados
+  const [ordenar, setOrdenar] = useState(false);
+  const [incluirExternas, setIncluirExternas] = useState(false);
   const [semInicio, setSemInicio] = useState("");
   const [semFin, setSemFin] = useState("");
-  const [turno, setTurno] = useState("ambos"); // 'matutino', 'vespertino', 'ambos'
+  const [turno, setTurno] = useState("ambos");
 
-  // --- LÓGICA DE BÚSQUEDA ---
   const buscar = async () => {
     setLoading(true);
     setResultados([]);
     setBusquedaRealizada(true);
 
-    // Construcción de filtros comunes (Query Params)
     const params = new URLSearchParams();
     if (ordenar) params.append("ordenarAscendente", "true");
     if (semInicio) params.append("semestre_inicial", semInicio);
     if (semFin) params.append("semestre_final", semFin);
     if (turno !== "ambos") params.append("turno", turno);
+    if (incluirExternas) params.append("incluir_externas", "true");
 
     try {
       let url = "";
       let options: RequestInit = {};
 
       if (modo === "profesor") {
-        // Endpoint POST para profesor
         url = `http://localhost:3000/grupos/profesor?${params.toString()}`;
         options = {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ profesor: queryProfesor }),
         };
+      } else if (modo === "materia") {
+        url = `http://localhost:3000/grupos/materia?${params.toString()}`;
+        options = {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ materia: queryMateria }),
+        };
       } else {
-        // Endpoint GET para rango de horario
         params.append("hora_inicio", horaInicio);
         params.append("hora_limite", horaFin);
         url = `http://localhost:3000/grupos/rango/${dia}?${params.toString()}`;
@@ -89,7 +89,6 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans">
       <div className="max-w-6xl mx-auto space-y-8">
-        {/* ENCABEZADO */}
         <div className="text-center space-y-2">
           <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
             Buscador de Horarios FES
@@ -99,16 +98,21 @@ function App() {
           </p>
         </div>
 
-        {/* PANEL DE CONTROL */}
         <div className="bg-white p-6 rounded-xl shadow-sm border space-y-6">
-          {/* Tabs de Modo de Búsqueda */}
-          <div className="flex space-x-4 border-b pb-4">
+          <div className="flex space-x-4 border-b pb-4 overflow-x-auto">
             <Button
               variant={modo === "profesor" ? "default" : "ghost"}
               onClick={() => setModo("profesor")}
               className="text-base"
             >
               Por Profesor
+            </Button>
+            <Button
+              variant={modo === "materia" ? "default" : "ghost"}
+              onClick={() => setModo("materia")}
+              className="text-base"
+            >
+              Por Materia
             </Button>
             <Button
               variant={modo === "rango" ? "default" : "ghost"}
@@ -119,10 +123,8 @@ function App() {
             </Button>
           </div>
 
-          {/* Grid de Inputs */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
-            {/* Inputs Dinámicos según Modo */}
-            {modo === "profesor" ? (
+            {modo === "profesor" && (
               <div className="lg:col-span-2 space-y-2">
                 <Label className="text-sm font-medium">
                   Nombre del Profesor
@@ -134,7 +136,23 @@ function App() {
                   onKeyDown={(e) => e.key === "Enter" && buscar()}
                 />
               </div>
-            ) : (
+            )}
+
+            {modo === "materia" && (
+              <div className="lg:col-span-2 space-y-2">
+                <Label className="text-sm font-medium">
+                  Nombre de la Materia
+                </Label>
+                <Input
+                  placeholder="Ej: Calculo Diferencial"
+                  value={queryMateria}
+                  onChange={(e) => setQueryMateria(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && buscar()}
+                />
+              </div>
+            )}
+
+            {modo === "rango" && (
               <>
                 <div className="space-y-2">
                   <Label>Día</Label>
@@ -167,11 +185,10 @@ function App() {
                     onChange={(e) => setHoraFin(e.target.value)}
                   />
                 </div>
-                <div className="hidden lg:block"></div> {/* Espaciador */}
+                <div className="hidden lg:block"></div>
               </>
             )}
 
-            {/* Filtros Globales */}
             <div className="space-y-2">
               <Label>Sem. Min</Label>
               <Input
@@ -191,7 +208,6 @@ function App() {
               />
             </div>
 
-            {/* Filtro de Turno */}
             <div className="space-y-2">
               <Label>Turno</Label>
               <Select value={turno} onValueChange={setTurno}>
@@ -206,7 +222,6 @@ function App() {
               </Select>
             </div>
 
-            {/* Botón Buscar */}
             <div className="lg:col-span-1">
               <Button
                 size="lg"
@@ -219,7 +234,6 @@ function App() {
             </div>
           </div>
 
-          {/* Opciones Extra (Switch) */}
           <div className="flex items-center space-x-2 pt-2">
             <Switch
               id="ordenar"
@@ -230,11 +244,23 @@ function App() {
               Ordenar por hora más temprana
             </Label>
           </div>
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="externas"
+              checked={incluirExternas}
+              onCheckedChange={setIncluirExternas}
+              className="data-[state=checked]:bg-emerald-600"
+            />
+            <Label
+              htmlFor="externas"
+              className="cursor-pointer text-emerald-700 font-medium"
+            >
+              Incluir materias de otras carreras
+            </Label>
+          </div>
         </div>
 
-        {/* RESULTADOS */}
         <div className="space-y-4">
-          {/* Header de Resultados y Toggle de Vista */}
           {(resultados.length > 0 || busquedaRealizada) && (
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4 border-b pb-4">
               <h2 className="text-xl font-semibold text-slate-800">
@@ -257,14 +283,12 @@ function App() {
             </div>
           )}
 
-          {/* Renderizado Condicional de Vistas */}
           {loading ? (
             <div className="py-20 text-center text-slate-400 animate-pulse">
               Cargando resultados...
             </div>
           ) : resultados.length > 0 ? (
             vista === "cards" ? (
-              // VISTA DE TARJETAS
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {resultados.map((clase, i) => (
                   <ClaseCard
@@ -274,7 +298,6 @@ function App() {
                 ))}
               </div>
             ) : (
-              // VISTA DE TABLA
               <ClaseTable datos={resultados} />
             )
           ) : (
