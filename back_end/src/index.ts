@@ -1,8 +1,9 @@
 import express, { type Request, type Response } from "express";
 import morgan from "morgan";
-import horarios from "./services/horarios_db";
 import cors from "cors";
 import gruposRoute from "./routes/grupos_route";
+import horariosRoute from "./routes/horarios_route";
+import { iniciarAlmacenamiento } from "./services/horarios_storage";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -21,5 +22,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use("/grupos", gruposRoute);
+app.use("/horarios", horariosRoute);
 
+await iniciarAlmacenamiento();
 app.listen(PORT, () => console.log(`http://localhost:${PORT}`));

@@ -6,6 +6,9 @@ out
 dist
 *.tgz
 
+# datos de usuario guardados
+src/services/horarios_guardados
+
 # code coverage
 coverage
 *.lcov

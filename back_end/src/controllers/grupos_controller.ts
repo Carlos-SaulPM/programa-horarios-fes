@@ -145,7 +145,33 @@ export const obtenerGruposRangoDeHorario = (req: Request, res: Response) => {
     resultados.push(...buscarEnMapa(db.horariosExternos, crearFiltro(true)));
   }
 
-  const respuesta = aplicarPreferenciaUsuario(resultados, req.query, diaUpper);
+  const respuesta = aplicarPreferenciaUsuario(resultados, req.query);
+  res.status(200).json(respuesta);
+};
+
+// --- 6. OBTENER POR SALÓN VIRTUAL ---
+export const obtenerGruposVirtuales = (req: Request, res: Response) => {
+  const { incluir_externas } = req.query;
+  let resultados: any[] = [];
+
+  const crearFiltro =
+    (esExterno: boolean) => (clases: any[], grupo: string) =>
+      clases
+        .filter((d) => (d.salon ?? "").toString().toUpperCase() === "VIRTUAL")
+        .map((d) => ({
+          ...d,
+          grupo,
+          esExterno: esExterno,
+          origen: esExterno ? "Externa" : undefined,
+        }));
+
+  resultados.push(...buscarEnMapa(db.horariosInternos, crearFiltro(false)));
+
+  if (incluir_externas === "true") {
+    resultados.push(...buscarEnMapa(db.horariosExternos, crearFiltro(true)));
+  }
+
+  const respuesta = aplicarPreferenciaUsuario(resultados, req.query);
   res.status(200).json(respuesta);
 };
 

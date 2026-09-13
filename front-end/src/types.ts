@@ -23,3 +23,19 @@ export interface Clase {
   esExterno?: boolean; // Opcional: true si viene de materias_externas.json
   origen?: string; // Opcional: El nombre de la carrera (ej. "Ingeniería Civil")
 }
+
+export interface HorarioGuardado {
+  id: string;
+  nombre: string;
+  materias: Clase[];
+  creado: string;
+  modificado: string;
+}
+
+export interface ResumenHorario {
+  id: string;
+  nombre: string;
+  creado: string;
+  modificado: string;
+  numMaterias: number;
+}

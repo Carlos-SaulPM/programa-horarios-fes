@@ -45,3 +45,36 @@ export const buscarEnMapa = (
   });
   return resultados;
 };
+
+const horasAMinutos = (hora: string): number => {
+  const [h, m] = hora.split(":").map((n) => parseInt(n));
+  return h! * 60 + m!;
+};
+
+const rangoDeDia = (clase: any, dia: string) => {
+  const rango = clase.horario?.[dia];
+  if (!rango || rango === "") return null;
+  const [ini, fin] = rango.split("-");
+  return { inicio: horasAMinutos(ini), fin: horasAMinutos(fin) };
+};
+
+const rangosTraslapan = (a: { inicio: number; fin: number }, b: { inicio: number; fin: number }) =>
+  a.inicio < b.fin && b.inicio < a.fin && a.fin > a.inicio && b.fin > b.inicio;
+
+export const traslapaConAlguna = (
+  materias: any[],
+  nueva: any,
+  excluirIndex?: number,
+): { dia: string; materia: any } | null => {
+  for (let i = 0; i < materias.length; i++) {
+    if (i === excluirIndex) continue;
+    for (const dia of ["LU", "MA", "MI", "JU", "VI", "SA"]) {
+      const rangoA = rangoDeDia(materias[i], dia);
+      const rangoB = rangoDeDia(nueva, dia);
+      if (rangoA && rangoB && rangosTraslapan(rangoA, rangoB)) {
+        return { dia, materia: materias[i] };
+      }
+    }
+  }
+  return null;
+};

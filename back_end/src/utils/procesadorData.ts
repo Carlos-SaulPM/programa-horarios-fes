@@ -1,6 +1,18 @@
 import { ordenarGruposCronologicamente } from "./horarioUtils";
 import { infoGrupo } from "./grupoUtils";
 
+const DIAS_VALIDOS = ["LU", "MA", "MI", "JU", "VI", "SA"];
+
+const diasActivosDeClase = (clase: any): string[] =>
+  DIAS_VALIDOS.filter((dia) => clase.horario?.[dia] !== undefined && clase.horario[dia] !== "");
+
+const mismosDias = (a: string[], b: string[]): boolean => {
+  if (a.length !== b.length) return false;
+  const ordenadosA = [...a].sort();
+  const ordenadosB = [...b].sort();
+  return ordenadosA.every((dia, i) => dia === ordenadosB[i]);
+};
+
 // En utils/procesadorData.ts
 export const aplicarPreferenciaUsuario = (
   resultados: any[],
@@ -37,6 +49,20 @@ export const aplicarPreferenciaUsuario = (
       const semestreValido = semestre === 0 ? 10 : semestre;
       return semestreValido >= min && semestreValido <= max;
     });
+  }
+
+  // 2.5 Filtro por Días Exactos
+  if (query.dias) {
+    const diasSolicitados = (query.dias as string)
+      .split(",")
+      .map((d) => d.trim().toUpperCase())
+      .filter((d) => DIAS_VALIDOS.includes(d));
+
+    if (diasSolicitados.length > 0) {
+      procesados = procesados.filter((item) =>
+        mismosDias(diasActivosDeClase(item), diasSolicitados),
+      );
+    }
   }
 
   // 3. Ordenamiento

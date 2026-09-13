@@ -2,23 +2,6 @@
   "INGENIERIA CIVIL": {
     "1100": [
       {
-        "profesor": "ALVAREZ BAUTISTA GABRIEL",
-        "clave": "1108",
-        "materia": "GEOMETRIA ANALITICA",
-        "grupo": "1100",
-        "tipo": "PRESENCIAL",
-        "horario": {
-          "LU": "08:30-10:00",
-          "MA": "",
-          "MI": "08:30-10:00",
-          "JU": "",
-          "VI": "08:30-10:00",
-          "SA": ""
-        },
-        "salon": "VIRTUAL",
-        "cupo": "0"
-      },
-      {
         "profesor": "MENCHACA ROCHA ROSA MARIA",
         "clave": "1109",
         "materia": "CALCULO DIFERENCIAL E INTEGRAL",
@@ -1688,8 +1671,8 @@
           "VI": "",
           "SA": ""
         },
-        "salon": "-",
-        "cupo": "45"
+        "salon": "A8120",
+        "cupo": "30"
       }
     ],
     "1974": [
